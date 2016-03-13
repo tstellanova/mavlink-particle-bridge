@@ -7,4 +7,6 @@
 
 # and from any subdirectories
 **/*.h
+**/*.cpp
+
 

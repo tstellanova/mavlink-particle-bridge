@@ -1,10 +1,10 @@
 // IMPORTANT: When including a library in a firmware app, a sub dir prefix is needed
 // before the particular .h file.
-#include "mavlink-particle-bridge/mavlink-particle-bridge.h"
+#include "mavlink-particle-bridge.h"
 
 // Initialize objects from the lib; be sure not to call anything
 // that requires hardware be initialized here, put those in setup()
-ParticleMavlinkLibrary::MavlinkBridge mavBridge();
+ParticleMavlinkLibrary::MavlinkBridge mavBridge;
 
 
 double	latitude_degrees = 0;
@@ -13,6 +13,7 @@ float   altitude_amsl_m = 0;
 float   groundspeed_m_s = 0; //meters per second
 float   heading_degrees = 0; //heading in degrees, 0 = North
 float   battery_volts = 0;
+
 
 
 void setup() {
@@ -31,10 +32,7 @@ void setup() {
 
     // register some remote commands
     // note that function names are limited to 12 characters currently
-    Particle.function("commandRTL", sendCommandRTL);
-    Particle.function("commandLand", sendCommandLand);
-    //TODO move command handling into this method:
-    Particle.function("sendCommand", sendCommand);
+    Particle.function("handleCommand", &ParticleMavlinkLibrary::MavlinkBridge::handleCommand, &mavBridge);
 }
 
 void handleMavlinkMsg(const mavlink_message_t& msg)
@@ -53,7 +51,7 @@ void handleMavlinkMsg(const mavlink_message_t& msg)
             //mavlink_msg_global_position_int_get_relative_alt(&msg);
 
             //Vehicle heading (yaw angle) in degrees * 100, 0.0..359.99 degrees. If unknown, set to: UINT16_MAX
-            //mavlink_msg_global_position_int_get_hdg(&msg);
+            heading_degrees = mavlink_msg_global_position_int_get_hdg(&msg) / 100.0f;
             //TODO: NED velocity reporting?
             //mavlink_msg_global_position_int_get_vx
         }
@@ -67,7 +65,7 @@ void handleMavlinkMsg(const mavlink_message_t& msg)
             //Current ground speed in m/s
             groundspeed_m_s = mavlink_msg_vfr_hud_get_groundspeed(&msg);
             //Current heading in degrees, in compass units (0..360, 0=north)
-            heading = mavlink_msg_vfr_hud_get_heading(&msg);
+            //heading_degrees = mavlink_msg_vfr_hud_get_heading(&msg)
         }
         break;
         case MAVLINK_MSG_ID_HEARTBEAT: {
@@ -78,22 +76,6 @@ void handleMavlinkMsg(const mavlink_message_t& msg)
     }
 }
 
-int sendCommand(String params)
-{
-    return -1;
-}
-
-int sendCommandRTL(String params)
-{
-    mavBridge.sendCommandRTL();
-    return 0;
-}
-
-int sendCommandLand(String params)
-{
-    mavBridge.sendCommandLand();
-    return 0;
-}
 
 void loop() {
     // Use the library's initialized objects and functions

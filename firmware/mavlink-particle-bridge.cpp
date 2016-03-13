@@ -35,20 +35,36 @@ bool MavlinkBridge::sendMavlinkMsg(mavlink_message_t& msg)
   return false;
 }
 
+
+int MavlinkBridge::handleCommand(String params)
+{
+  if (params == "RTL") {
+    sendCommandRTL();
+    return 0;
+  }
+  else if (params == "Land") {
+    sendCommandLand();
+    return 0;
+  }
+  
+  return -1;
+}
+
+
 bool MavlinkBridge::sendCommandRTL()
 {
   mavlink_command_long_t packet;
   memset(&packet, 0, sizeof(packet));
-  mavlink_msg_command_long_send(MAVLINK_COMM_0, m_msg.sysid, m_msg.compid, 
-    MAV_CMD_NAV_RETURN_TO_LAUNCH, 
-    packet.confirmation, 
-    packet.param1, 
-    packet.param2, 
-    packet.param3, 
-    packet.param4, 
-    packet.param5, 
-    packet.param6, 
-    packet.param7 );
+  // mavlink_msg_command_long_send(MAVLINK_COMM_0, m_msg.sysid, m_msg.compid, 
+  //   MAV_CMD_NAV_RETURN_TO_LAUNCH, 
+  //   packet.confirmation, 
+  //   packet.param1, 
+  //   packet.param2, 
+  //   packet.param3, 
+  //   packet.param4, 
+  //   packet.param5, 
+  //   packet.param6, 
+  //   packet.param7 );
 
   return true;
 }
@@ -57,16 +73,16 @@ bool MavlinkBridge::sendCommandLand()
 {
   mavlink_command_long_t packet;
   memset(&packet, 0, sizeof(packet));
-  mavlink_msg_command_long_send(MAVLINK_COMM_0, m_msg.sysid, m_msg.compid, 
-    MAV_CMD_NAV_LAND, 
-    packet.confirmation, 
-    packet.param1, 
-    packet.param2, 
-    packet.param3, 
-    packet.param4, 
-    packet.param5, 
-    packet.param6, 
-    packet.param7);
+  // mavlink_msg_command_long_send(MAVLINK_COMM_0, m_msg.sysid, m_msg.compid, 
+  //   MAV_CMD_NAV_LAND, 
+  //   packet.confirmation, 
+  //   packet.param1, 
+  //   packet.param2, 
+  //   packet.param3, 
+  //   packet.param4, 
+  //   packet.param5, 
+  //   packet.param6, 
+  //   packet.param7);
 
   return true;
 }
