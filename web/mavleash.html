@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+
+<title>MAVLEASH</title>
+<body>
+	Howdy!
+ 	<br/>
+	<p>
+	<button id="rtl_button" onclick="rtlCommand()">RTL</button>
+	<br/>
+	<button id="land_button" onclick="landCommand()">Land</button>
+	<br/>
+
+    <br><br>
+	<P>Latitude: <span id="curLat"></span><br>
+	<P>Longitude: <span id="curLon"></span><br>
+	<P>Command: <span id="curCommand"></span><br>
+		
+	<div id="map-canvas"></div>
+
+    <script type="text/javascript">
+      var deviceID    = "< device id >";
+      var accessToken = "< access token >";
+      var reqPrefix = "https://api.particle.io/v1/devices/" + deviceID + "/";
+      var reqSuffix = "/?access_token=" + accessToken;
+
+      window.setInterval(function() {
+	
+        requestURL = reqPrefix + "latitude" + reqSuffix;
+        $.getJSON(requestURL, function(json) {
+                 document.getElementById("curLat").innerHTML = json.result ;
+                 });
+        requestURL = reqPrefix + "longitude" + reqSuffix;
+        $.getJSON(requestURL, function(json) {
+                 document.getElementById("curLon").innerHTML = json.result ;
+                 });
+        requestURL = reqPrefix + "command" + reqSuffix;
+        $.getJSON(requestURL, function(json) {
+                 document.getElementById("curCommand").innerHTML = json.result ;
+                 });
+
+      }, 1000);
+
+	function landCommand() {
+		var requestURL = reqPrefix + "commandLand" + "/";
+        $.post( requestURL, { access_token: accessToken });
+	}
+	
+	function rtlCommand() {
+		var requestURL = reqPrefix + "commandRTL" + "/";
+        $.post( requestURL, { access_token: accessToken });
+	}
+
+    </script>
+</body>
+</html>
