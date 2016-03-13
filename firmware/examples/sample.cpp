@@ -9,12 +9,18 @@ ParticleMavlinkLibrary::MavlinkBridge mavBridge;
 
 double	latitude_degrees = 0;
 double	longitude_degrees = 0;
-float   altitude_amsl_m = 0;
-float   groundspeed_m_s = 0; //meters per second
-float   heading_degrees = 0; //heading in degrees, 0 = North
-float   battery_volts = 0;
+double  altitude_amsl_m = 0;
+double  groundspeed_m_s = 0; //meters per second
+double  heading_degrees = 0; //heading in degrees, 0 = North
+double  battery_volts = 0;
 
+uint32_t  last_msg = 0;
+String last_cmd = "Idle";
 
+int handleCommand(String params)  {
+  last_cmd = params;
+  return mavBridge.handleCommand(params);
+}
 
 void setup() {
     // Call functions on initialized library objects that require hardware
@@ -29,14 +35,17 @@ void setup() {
     Particle.variable("groundspeed",groundspeed_m_s);
     Particle.variable("heading",heading_degrees);
     Particle.variable("battery_v",battery_volts);
+    Particle.variable("last_msg",last_msg);
+    Particle.variable("last_cmd", last_cmd);
 
     // register some remote commands
     // note that function names are limited to 12 characters currently
-    Particle.function("handleCommand", &ParticleMavlinkLibrary::MavlinkBridge::handleCommand, &mavBridge);
+    Particle.function("command", handleCommand);
 }
 
 void handleMavlinkMsg(const mavlink_message_t& msg)
 {
+    last_msg = msg.msgid;
     switch(msg.msgid) {
         case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
             //Latitude, expressed as degrees * 1E7
@@ -44,7 +53,7 @@ void handleMavlinkMsg(const mavlink_message_t& msg)
             longitude_degrees = ((double)mavlink_msg_global_position_int_get_lon(&msg)) / 1E7;
 
             //Altitude in meters, expressed as * 1000 (millimeters), AMSL (not WGS84)
-            altitude_amsl_m = ((float)mavlink_msg_global_position_int_get_alt(&msg))/1000.0f;
+            altitude_amsl_m = ((double)mavlink_msg_global_position_int_get_alt(&msg))/1000.0f;
 
             //Altitude above ground in meters, expressed as * 1000 (millimeters)
             //tends to be inaccurate unless we have an AGL sensor

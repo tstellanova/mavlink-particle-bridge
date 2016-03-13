@@ -5,24 +5,28 @@
 
 <title>MAVLEASH</title>
 <body>
-	Howdy!
- 	<br/>
-	<p>
-	<button id="rtl_button" onclick="rtlCommand()">RTL</button>
-	<br/>
-	<button id="land_button" onclick="landCommand()">Land</button>
-	<br/>
+  <table border="1">	
+  <tr><td>Latitude (deg)</td><td align="right" width="70%"><span id="curLat"></span></td></tr>
+  <tr><td>Longitude (deg)</td><td align="right" width="70%"><span id="curLon"></span></td></tr>
+  <tr><td>Altitude AMSL (m)</td><td align="right" width="70%"><span id="curAlt"></span></td></tr>
+  <tr><td>Speed (m/s)</td><td align="right" width="70%"><span id="curSpeed"></span></td></tr>
+  <tr><td>Heading (deg)</td><td align="right" width="70%"><span id="curHeading"></span></td></tr>
+  <tr><td>Last Msg</td><td align="right" width="70%"><span id="lastMsg"></span></td></tr>
+  </table>
+  <p>
+  <button id="rtl_button" onclick="rtlCommand()">RTL</button>
+  <br/>
+  <button id="land_button" onclick="landCommand()">Land</button>
+  <br/>
+  <br/>Last Command:<span id="lastCommand"></span></br/>
+  <br/><br/>
+  
 
-    <br><br>
-	<P>Latitude: <span id="curLat"></span><br>
-	<P>Longitude: <span id="curLon"></span><br>
-	<P>Command: <span id="curCommand"></span><br>
-		
 	<div id="map-canvas"></div>
 
     <script type="text/javascript">
-      var deviceID    = "< device id >";
-      var accessToken = "< access token >";
+      var deviceID    = "< device ID>";
+      var accessToken = "< access token > ";
       var reqPrefix = "https://api.particle.io/v1/devices/" + deviceID + "/";
       var reqSuffix = "/?access_token=" + accessToken;
 
@@ -36,21 +40,38 @@
         $.getJSON(requestURL, function(json) {
                  document.getElementById("curLon").innerHTML = json.result ;
                  });
-        requestURL = reqPrefix + "command" + reqSuffix;
+        requestURL = reqPrefix + "altitude" + reqSuffix;
         $.getJSON(requestURL, function(json) {
-                 document.getElementById("curCommand").innerHTML = json.result ;
+                 document.getElementById("curAlt").innerHTML = json.result ;
                  });
-
+        requestURL = reqPrefix + "groundspeed" + reqSuffix;
+        $.getJSON(requestURL, function(json) {
+                 document.getElementById("curSpeed").innerHTML = json.result ;
+                 });
+        requestURL = reqPrefix + "heading" + reqSuffix;
+        $.getJSON(requestURL, function(json) {
+                 document.getElementById("curHeading").innerHTML = json.result ;
+                 });
+        requestURL = reqPrefix + "last_msg" + reqSuffix;
+        $.getJSON(requestURL, function(json) {
+                 document.getElementById("lastMsg").innerHTML = json.result ;
+                 });
+        requestURL = reqPrefix + "last_cmd" + reqSuffix;
+        $.getJSON(requestURL, function(json) {
+                 document.getElementById("lastCommand").innerHTML = json.result ;
+                 });
       }, 1000);
 
 	function landCommand() {
-		var requestURL = reqPrefix + "commandLand" + "/";
-        $.post( requestURL, { access_token: accessToken });
+	  var extra = "Land";
+		var requestURL = reqPrefix + "command" + "/";
+        $.post( requestURL, {params: extra, access_token: accessToken });
 	}
 	
 	function rtlCommand() {
-		var requestURL = reqPrefix + "commandRTL" + "/";
-        $.post( requestURL, { access_token: accessToken });
+	  var extra = "RTL";
+		var requestURL = reqPrefix + "command" + "/";
+        $.post( requestURL, {params: extra, access_token: accessToken });
 	}
 
     </script>

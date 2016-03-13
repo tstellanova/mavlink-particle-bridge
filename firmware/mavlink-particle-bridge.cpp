@@ -10,6 +10,7 @@ void MavlinkBridge::init()
   while (!Serial1.available()) {
     Particle.process();
   }
+
 }
 
 bool MavlinkBridge::readMavlinkMsg(mavlink_message_t& msg)
