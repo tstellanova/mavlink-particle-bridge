@@ -15,10 +15,6 @@ float   heading_degrees = 0; //heading in degrees, 0 = North
 float   battery_volts = 0;
 
 
-int sendCommand(String params)
-{
-    return -1;
-}
 
 int sendCommandRTL(String params)
 {
@@ -50,8 +46,7 @@ void setup() {
     // note that function names are limited to 12 characters currently
     Particle.function("commandRTL", sendCommandRTL);
     Particle.function("commandLand", sendCommandLand);
-    //TODO move command handling into this method:
-    Particle.function("sendCommand", sendCommand);
+
 }
 
 void handleMavlinkMsg(const mavlink_message_t& msg)

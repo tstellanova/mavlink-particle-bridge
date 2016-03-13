@@ -1,8 +1,6 @@
 // NOTE/NUANCE: When including WITHIN a library, no sub-dir prefix is needed.
 #include "mavlink-particle-bridge.h"
 
-
-
 namespace ParticleMavlinkLibrary {
 
 void MavlinkBridge::init()
