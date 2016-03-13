@@ -7,6 +7,7 @@
 ParticleMavlinkLibrary::MavlinkBridge mavBridge;
 
 
+int message_count = 0;
 double	latitude_degrees = 0;
 double	longitude_degrees = 0;
 double  altitude_amsl_m = 0;
@@ -29,14 +30,14 @@ void setup() {
 
     // register some cloud variables to be monitored:
     // note that variable names are limited to 12 characters currently
-    Particle.variable("latitude", latitude_degrees);
-    Particle.variable("longitude", longitude_degrees);
-    Particle.variable("altitude", altitude_amsl_m);
-    Particle.variable("groundspeed",groundspeed_m_s);
-    Particle.variable("heading",heading_degrees);
-    Particle.variable("battery_v",battery_volts);
-    Particle.variable("last_msg",last_msg);
-    Particle.variable("last_cmd", last_cmd);
+    // Particle.variable("latitude", latitude_degrees);
+    // Particle.variable("longitude", longitude_degrees);
+    // Particle.variable("altitude", altitude_amsl_m);
+    // Particle.variable("groundspeed",groundspeed_m_s);
+    // Particle.variable("heading",heading_degrees);
+    // Particle.variable("battery_v",battery_volts);
+    // Particle.variable("last_msg",last_msg);
+    // Particle.variable("last_cmd", last_cmd);
 
     // register some remote commands
     // note that function names are limited to 12 characters currently
@@ -92,7 +93,27 @@ void loop() {
     if (mavBridge.readMavlinkMsg(msg)) {
         //received one mavlink message
         handleMavlinkMsg(msg);
+        message_count++;
     }
+    
+    //publish a periodic summary as JSON rather than individual Particle.variables:
+    //this reduces data usage (with electron especially)
+    if (message_count > 20) {
+      Particle.publish("summary", 
+        String::format("{\"lat\":%0.6f, \"lon\":%0.6f, \"amsl\":%0.2f, \"speed\":%0.2f, \"head\":%0.2f, \"volts\":%0.2f, \"msg\":%d, \"cmd\":\"%s\"}",
+          latitude_degrees,
+          longitude_degrees,
+          altitude_amsl_m,
+          groundspeed_m_s,
+          heading_degrees,
+          battery_volts,
+          last_msg,
+          last_cmd.c_str()
+          ),
+          10);
+        message_count = 0;
+      }
+
     //give up some time to Particle housekeeping
     Particle.process();
 }
