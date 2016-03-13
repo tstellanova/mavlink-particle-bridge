@@ -11,7 +11,17 @@
 
 // TEMPORARY UNTIL the stuff that supports the code above is deployed to the build IDE
 #include "application.h"
-#include "mavlink/common/mavlink.h"
+
+#ifndef MAVLINK_USE_CONVENIENCE_FUNCTIONS
+#define MAVLINK_USE_CONVENIENCE_FUNCTIONS 1
+#endif
+
+#ifndef MAVLINK_SEPARATE_HELPERS
+#define MAVLINK_SEPARATE_HELPERS 1
+#endif
+
+
+#include "mavlink.h"
 
 namespace ParticleMavlinkLibrary 
 {
