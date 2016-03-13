@@ -1,5 +1,5 @@
 // NOTE/NUANCE: When including WITHIN a library, no sub-dir prefix is needed.
-#include "particle-mavlink.h"
+#include "mavlink-particle-bridge.h"
 
 
 
