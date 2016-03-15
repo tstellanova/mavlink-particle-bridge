@@ -19,6 +19,7 @@ int landed_state = MAV_LANDED_STATE_UNDEFINED;
 
 uint32_t  last_msg = 0;
 String last_cmd = "--";
+int heartbeat_count = 0;//rate-limit transmissions OTA
 
 int handleCommand(String params)  {
   last_cmd = params;
@@ -136,8 +137,12 @@ void handleMavlinkMsg(const mavlink_message_t& msg)
         break;
         case MAVLINK_MSG_ID_HEARTBEAT: {
           //TODO: handle mavlink_msg_heartbeat_get_base_mode and so forth
-          //We know that this message arrives at about 1Hz, which gives a nice update rate for publication
-          publishStateAsCSV();
+          //We know that this message arrives at about 1Hz, which gives a nice base update rate for publication
+          heartbeat_count++;
+          if (heartbeat_count > 2) { //limit to less than 2Hz
+            publishStateAsCSV();
+            heartbeat_count = 0;
+          }
         }
         break;
         case MAVLINK_MSG_ID_EXTENDED_SYS_STATE: {
