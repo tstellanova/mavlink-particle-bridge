@@ -30,13 +30,6 @@ bool MavlinkBridge::readMavlinkMsg(mavlink_message_t& msg)
   return false;
 }
 
-bool MavlinkBridge::sendMavlinkMsg(mavlink_message_t& msg)
-{
-  //TODO implement generic message send?
-  return false;
-}
-
-
 int MavlinkBridge::handleCommand(String params)
 {
   if (params == "RTL") {

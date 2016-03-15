@@ -20,9 +20,9 @@
   <tr><td>Speed (m/s)</td><td align="right" width="70%"><span id="curSpeed"></span></td></tr>
   <tr><td>Heading (deg)</td><td align="right" width="70%"><span id="curHeading"></span></td></tr>
   <tr><td>Battery (V)</td><td align="right" width="70%"><span id="curBattery"></span></td></tr>
-  <tr><td>Last Msg</td><td align="right" width="70%"><span id="lastMsg"></span></td></tr>
   <tr><td>Last Cmd</td><td align="right" width="70%"><span id="lastCommand"></span></td></tr>
-  <tr><td>Summary</td><td align="right" width="70%"><span id="curSummary"></span></td></tr>
+  <tr><td>JSON</td><td align="right" width="70%"><span id="curJSON"></span></td></tr>
+  <tr><td>CSV</td><td align="right" width="70%"><span id="curCSV"></span></td></tr>
   </table>
   <br/>
   <button id="rtl_button" onclick="rtlCommand()">RTL</button>
@@ -34,10 +34,10 @@
     var map_marker;
     var latitude = null;
     var longitude = null;
-    var lastSummaryObj = null;
+    var lastSummaryObj = {};
     
-    var deviceID    = "< device id >";
-    var accessToken = "<access token >";
+    var deviceID    = "< device ID >";
+    var accessToken = "< access token >";
     var reqPrefix = "https://api.particle.io/v1/devices/" + deviceID + "/";
     var reqSuffix = "/?access_token=" + accessToken;
 
@@ -69,10 +69,6 @@
     //   $.getJSON(requestURL, function(json) {
     //            document.getElementById("curBattery").innerHTML = json.result ;
     //            });               
-    //   requestURL = reqPrefix + "last_msg" + reqSuffix;
-    //   $.getJSON(requestURL, function(json) {
-    //            document.getElementById("lastMsg").innerHTML = json.result ;
-    //            });
     //   requestURL = reqPrefix + "last_cmd" + reqSuffix;
     //   $.getJSON(requestURL, function(json) {
     //            document.getElementById("lastCommand").innerHTML = json.result ;
@@ -80,12 +76,12 @@
     //            
     // }, 1000);
     
-    var eventSource = new EventSource("https://api.particle.io/v1/devices/" + deviceID + "/events/summary/?access_token=" + accessToken);
-    eventSource.addEventListener('summary', function(e) {
+    var statejson_eventSource = new EventSource("https://api.particle.io/v1/devices/" + deviceID + "/events/statejson/?access_token=" + accessToken);
+    statejson_eventSource.addEventListener('statejson', function(e) {
       var wrapperObj = JSON.parse(e.data);
       var summary = wrapperObj.data;
-      document.getElementById("curSummary").innerHTML =  "["+e.data.length +"]: "+ summary; 
-
+      document.getElementById("curJSON").innerHTML =  "["+e.data.length +"]: "+ summary; 
+    
       lastSummaryObj = JSON.parse(summary);
       latitude = lastSummaryObj.lat;
       longitude = lastSummaryObj.lon;
@@ -95,12 +91,39 @@
       document.getElementById("curSpeed").innerHTML = lastSummaryObj.speed ;
       document.getElementById("curHeading").innerHTML = lastSummaryObj.head ;
       document.getElementById("curBattery").innerHTML = lastSummaryObj.volts ;
-      document.getElementById("lastMsg").innerHTML = lastSummaryObj.msg ;
+      document.getElementById("lastCommand").innerHTML = lastSummaryObj.cmd ;
+    
+      gmapRedraw();
+      },false);
+      
+    var statecsv_eventSource = new EventSource("https://api.particle.io/v1/devices/" + deviceID + "/events/statecsv/?access_token=" + accessToken);
+      statecsv_eventSource.addEventListener('statecsv', function(e) {
+      var wrapperObj = JSON.parse(e.data);
+      var summary = wrapperObj.data;
+      var summaryArray = JSON.parse(summary);
+
+      document.getElementById("curCSV").innerHTML =  "["+e.data.length +"]: " +  summary; 
+
+      lastSummaryObj.lat = summaryArray[0];
+      lastSummaryObj.lon = summaryArray[1];
+      lastSummaryObj.amsl = summaryArray[2];
+      lastSummaryObj.speed = summaryArray[3];
+      lastSummaryObj.head = summaryArray[4];
+      lastSummaryObj.volts = summaryArray[5];
+      lastSummaryObj.cmd = summaryArray[6];
+
+      latitude = lastSummaryObj.lat;
+      longitude = lastSummaryObj.lon;
+      document.getElementById("curLat").innerHTML = latitude ;
+      document.getElementById("curLon").innerHTML = longitude ;
+      document.getElementById("curAlt").innerHTML = lastSummaryObj.amsl ;
+      document.getElementById("curSpeed").innerHTML = lastSummaryObj.speed ;
+      document.getElementById("curHeading").innerHTML = lastSummaryObj.head ;
+      document.getElementById("curBattery").innerHTML = lastSummaryObj.volts ;
       document.getElementById("lastCommand").innerHTML = lastSummaryObj.cmd ;
 
       gmapRedraw();
-      },false);
-               
+    },false);              
     //init google maps
     google.maps.event.addDomListener(window, 'load', gmapInit());
 
