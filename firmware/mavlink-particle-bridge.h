@@ -24,16 +24,32 @@ namespace ParticleMavlinkLibrary
     mavlink_message_t m_msg;
     mavlink_status_t m_status;
     bool m_mavlink_available;
+
+    uint8_t m_system_type;
+    uint8_t m_autopilot_type;
+    uint8_t m_system_mode;
+    uint32_t m_custom_mode;
+    uint8_t m_system_state;
+    
+    uint8_t m_mavlink_sysid;
+    uint8_t m_mavlink_compid;
+
+    // Initialize the required buffers
+    mavlink_message_t msg;
+    uint8_t buf[MAVLINK_MAX_PACKET_LEN];
     
   public:
     MavlinkBridge() {};
     void init();//TODO make Serial port and baud rate configurable
     bool readMavlinkMsg(mavlink_message_t& msg);
-    int handleCommand(String params);
+    bool handleCommand(String params);
     
   protected:
     bool sendCommandRTL();
     bool sendCommandLand();
+    bool sendCommandTakeoff();
+    bool sendLongCommand(uint16_t command);
+
   };
 }
 

@@ -13,7 +13,7 @@
   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
 </head>
 <body>
-  <table border="1">	
+  <table border="1" width="100%">	
   <tr><td>Latitude (deg)</td><td align="right" width="70%"><span id="curLat"></span></td></tr>
   <tr><td>Longitude (deg)</td><td align="right" width="70%"><span id="curLon"></span></td></tr>
   <tr><td>Altitude AMSL (m)</td><td align="right" width="70%"><span id="curAlt"></span></td></tr>
@@ -27,6 +27,10 @@
   <br/>
   <button id="rtl_button" onclick="rtlCommand()">RTL</button>
   <button id="land_button" onclick="landCommand()">Land</button>
+  <button id="takeoff_button" onclick="takeoffCommand()">Takeoff</button>
+  <br/>
+  <button id="reset_button" onclick="resetCommand()">Reset</button>
+
 	<div id="map-canvas"></div>
 	
   <script type="text/javascript">
@@ -36,11 +40,12 @@
     var longitude = null;
     var lastSummaryObj = {};
     
-    var deviceID    = "< device ID >";
-    var accessToken = "< access token >";
+    var deviceID    = "<device ID>"; 
+    var accessToken = "<access token>";
     var reqPrefix = "https://api.particle.io/v1/devices/" + deviceID + "/";
     var reqSuffix = "/?access_token=" + accessToken;
 
+    // This code would obtain variable values, assuming you use Particle.variables
     // window.setInterval(function() {
     // 
     //   requestURL = reqPrefix + "latitude" + reqSuffix;
@@ -75,6 +80,7 @@
     //            });
     //            
     // }, 1000);
+    
     
     var statejson_eventSource = new EventSource("https://api.particle.io/v1/devices/" + deviceID + "/events/statejson/?access_token=" + accessToken);
     statejson_eventSource.addEventListener('statejson', function(e) {
@@ -129,15 +135,28 @@
 
   function landCommand() {
     var extra = "Land";
-  	var requestURL = reqPrefix + "command" + "/";
+    var requestURL = reqPrefix + "command" + "/";
         $.post( requestURL, {params: extra, access_token: accessToken });
   }
 
   function rtlCommand() {
     var extra = "RTL";
-  	var requestURL = reqPrefix + "command" + "/";
+    var requestURL = reqPrefix + "command" + "/";
         $.post( requestURL, {params: extra, access_token: accessToken });
   }
+  
+  function takeoffCommand() {
+    var extra = "Takeoff";
+    var requestURL = reqPrefix + "command" + "/";
+        $.post( requestURL, {params: extra, access_token: accessToken });
+  }
+  
+  
+  function resetCommand() {
+    var extra = "Reset";
+    var requestURL = reqPrefix + "command" + "/";
+        $.post( requestURL, {params: extra, access_token: accessToken });
+  }  
 
   function gmapInit() {
     map = new google.maps.Map(document.getElementById('map-canvas'), {

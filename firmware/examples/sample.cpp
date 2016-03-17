@@ -14,6 +14,8 @@ double  groundspeed_m_s = 0; //groundspeed in meters per second
 double  heading_degrees = 0; //heading in degrees, 0 = North
 double  battery_volts = 0;//remaining battery potential, 0.0 if no battery present
 
+int command_LED = D7;
+
 // vehicle landed state (MAV_LANDED_STATE)
 int landed_state = MAV_LANDED_STATE_UNDEFINED;
 
@@ -22,8 +24,22 @@ String last_cmd = "--";
 int heartbeat_count = 0;//rate-limit transmissions OTA
 
 int handleCommand(String params)  {
-  last_cmd = params;
-  return mavBridge.handleCommand(params);
+  int result = -1;
+  
+  if (params == "Reset") {
+    System.reset();
+    return 0; 
+  }
+
+  digitalWrite(command_LED, HIGH);
+
+  bool success = mavBridge.handleCommand(params);
+  if (success) {
+    result = 0;
+    last_cmd = params;
+  }
+  
+  return result;
 }
 
 void publishStateAsJSON() {
@@ -39,7 +55,7 @@ void publishStateAsJSON() {
       battery_volts,
       last_cmd.c_str()
       ),
-      10);
+      30);
 }
 
 void publishStateAsCSV() {
@@ -54,7 +70,7 @@ void publishStateAsCSV() {
     battery_volts,
     last_cmd.c_str()
     ),
-    10);
+    30);
 }
 
 /**
@@ -72,7 +88,7 @@ void publishLandedState() {
 }
 
 /**
-* Register some cloud variables to be monitored:
+* Register some cloud variables to be monitored
 */
 void registerCloudVariables() {
   // note that variable names are limited to 12 characters currently
@@ -97,6 +113,12 @@ void setup() {
   // register some remote commands:
   // note that function names are limited to 12 characters currently
   Particle.function("command", handleCommand);
+  
+  //setup for indicating command received
+  pinMode(command_LED, OUTPUT);
+  digitalWrite(command_LED, LOW);
+
+
 }
 
 void handleMavlinkMsg(const mavlink_message_t& msg)
@@ -139,10 +161,10 @@ void handleMavlinkMsg(const mavlink_message_t& msg)
           //TODO: handle mavlink_msg_heartbeat_get_base_mode and so forth
           //We know that this message arrives at about 1Hz, which gives a nice base update rate for publication
           heartbeat_count++;
-          if (heartbeat_count > 2) { //limit to less than 2Hz
+          if (heartbeat_count > 3) { //rate limit transmissions
             publishStateAsCSV();
             heartbeat_count = 0;
-          }
+          }  
         }
         break;
         case MAVLINK_MSG_ID_EXTENDED_SYS_STATE: {
