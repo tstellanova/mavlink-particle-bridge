@@ -42,11 +42,35 @@ int handleCommand(String params)  {
   return result;
 }
 
+/**
+Publish a summary of the MAV state in JSON format, a more compact format than individual Particle.variables:
+this reduces data usage (with Electron especially)
+*/
 void publishStateAsJSON() {
-  // Publish a summary of the MAV state in JSON format, a more compact format than individual Particle.variables:
-  // this reduces data usage (with Electron especially)
-  Particle.publish("statejson", 
-    String::format("{\"lat\":%0.5f, \"lon\":%0.5f, \"amsl\":%0.2f, \"speed\":%0.2f, \"head\":%0.2f, \"volts\":%0.2f, \"cmd\":\"%s\"}",
+
+  if (!((latitude_degrees == 0) && (longitude_degrees == 0))) {
+    Particle.publish("statejson", 
+      String::format("{\"lat\":%0.5f, \"lon\":%0.5f, \"amsl\":%0.2f, \"speed\":%0.2f, \"head\":%0.2f, \"volts\":%0.2f, \"cmd\":\"%s\"}",
+        latitude_degrees,
+        longitude_degrees,
+        altitude_amsl_m,
+        groundspeed_m_s,
+        heading_degrees,
+        battery_volts,
+        last_cmd.c_str()
+        ),
+        30);
+    }
+}
+
+/**
+Publish a summary of the MAV state in CSV, an even more compact form than JSON
+*/
+void publishStateAsCSV() {
+
+  if (!((latitude_degrees == 0) && (longitude_degrees == 0))) {
+    Particle.publish("statecsv", 
+      String::format("[%0.5f,%0.5f,%0.2f,%0.2f,%0.2f,%0.2f,\"%s\"]",
       latitude_degrees,
       longitude_degrees,
       altitude_amsl_m,
@@ -56,21 +80,7 @@ void publishStateAsJSON() {
       last_cmd.c_str()
       ),
       30);
-}
-
-void publishStateAsCSV() {
-  //Publish a summary of the MAV state in CSV, an even more compact form than JSON
-  Particle.publish("statecsv", 
-    String::format("[%0.5f,%0.5f,%0.2f,%0.2f,%0.2f,%0.2f,\"%s\"]",
-    latitude_degrees,
-    longitude_degrees,
-    altitude_amsl_m,
-    groundspeed_m_s,
-    heading_degrees,
-    battery_volts,
-    last_cmd.c_str()
-    ),
-    30);
+  }
 }
 
 /**
@@ -90,17 +100,17 @@ void publishLandedState() {
 /**
 * Register some cloud variables to be monitored
 */
-void registerCloudVariables() {
-  // note that variable names are limited to 12 characters currently
-  Particle.variable("latitude", latitude_degrees);
-  Particle.variable("longitude", longitude_degrees);
-  Particle.variable("altitude", altitude_amsl_m);
-  Particle.variable("groundspeed",groundspeed_m_s);
-  Particle.variable("heading",heading_degrees);
-  Particle.variable("battery_v",battery_volts);
-  Particle.variable("last_msg",last_msg);
-  Particle.variable("last_cmd", last_cmd);
-}
+// void registerCloudVariables() {
+//   // note that variable names are limited to 12 characters currently
+//   Particle.variable("latitude", latitude_degrees);
+//   Particle.variable("longitude", longitude_degrees);
+//   Particle.variable("altitude", altitude_amsl_m);
+//   Particle.variable("groundspeed",groundspeed_m_s);
+//   Particle.variable("heading",heading_degrees);
+//   Particle.variable("battery_v",battery_volts);
+//   Particle.variable("last_msg",last_msg);
+//   Particle.variable("last_cmd", last_cmd);
+// }
   
 void setup() {
   // Call functions on initialized library objects that require hardware
