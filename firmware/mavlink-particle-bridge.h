@@ -23,20 +23,10 @@ namespace ParticleMavlinkLibrary
   protected:
     mavlink_message_t m_msg;
     mavlink_status_t m_status;
-    bool m_mavlink_available;
+    bool m_mavlink_available;///< Have we parsed at least one mavlink msg successfully?
 
-    uint8_t m_system_type;
-    uint8_t m_autopilot_type;
-    uint8_t m_system_mode;
-    uint32_t m_custom_mode;
-    uint8_t m_system_state;
-    
-    uint8_t m_mavlink_sysid;
-    uint8_t m_mavlink_compid;
-
-    // Initialize the required buffers
-    mavlink_message_t msg;
-    uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+    uint8_t m_mavlink_sysid;///< The mavlink system ID of the autopilot we're communicating with
+    uint8_t m_mavlink_compid;///< The mavlink component ID of the autopilot we're communicating with
     
   public:
     MavlinkBridge() {};

@@ -3,41 +3,15 @@
 
 namespace ParticleMavlinkLibrary {
 
-// enum PX4_CUSTOM_MAIN_MODE {
-//     PX4_CUSTOM_MAIN_MODE_MANUAL = 1,
-//     PX4_CUSTOM_MAIN_MODE_ALTCTL,
-//     PX4_CUSTOM_MAIN_MODE_POSCTL,
-//     PX4_CUSTOM_MAIN_MODE_AUTO,
-//     PX4_CUSTOM_MAIN_MODE_ACRO,
-//     PX4_CUSTOM_MAIN_MODE_OFFBOARD,
-//     PX4_CUSTOM_MAIN_MODE_STABILIZED,
-//     PX4_CUSTOM_MAIN_MODE_RATTITUDE
-//     
-// };
-// 
-// enum PX4_CUSTOM_SUB_MODE_AUTO {
-//     PX4_CUSTOM_SUB_MODE_AUTO_READY = 1,
-//     PX4_CUSTOM_SUB_MODE_AUTO_TAKEOFF,
-//     PX4_CUSTOM_SUB_MODE_AUTO_LOITER,
-//     PX4_CUSTOM_SUB_MODE_AUTO_MISSION,
-//     PX4_CUSTOM_SUB_MODE_AUTO_RTL,
-//     PX4_CUSTOM_SUB_MODE_AUTO_LAND,
-//     PX4_CUSTOM_SUB_MODE_AUTO_RTGS
-// };
 
 void MavlinkBridge::init()
 {
-  // open serial over TX and RX pins
+  // open serial over TX and RX pins on Particle
   Serial1.begin(57600);  
   while (!Serial1.available()) {
     Particle.process();
   }
-  
-  m_system_type = MAV_TYPE_QUADROTOR;
-  m_autopilot_type = MAV_AUTOPILOT_GENERIC;
-  m_system_mode = MAV_MODE_PREFLIGHT; ///< Booting up
-  m_custom_mode = 0;                 
-  m_system_state = MAV_STATE_STANDBY; ///< System ready for flight
+
 }
 
 bool MavlinkBridge::readMavlinkMsg(mavlink_message_t& msg)
@@ -78,7 +52,6 @@ bool MavlinkBridge::handleCommand(String params)
 
 bool MavlinkBridge::sendLongCommand(uint16_t command)
 {
- // MAV_CMD_NAV_TAKEOFF
   mavlink_message_t msg;
   uint8_t buf[MAVLINK_MAX_PACKET_LEN];
   
@@ -105,9 +78,13 @@ bool MavlinkBridge::sendLongCommand(uint16_t command)
 bool MavlinkBridge::sendCommandRTL()
 {
   //This might work with eg Arducopter, haven't tried it:
-  //return sendLongCommand(MAV_CMD_NAV_RETURN_TO_LAUNCH);
+  return sendLongCommand(MAV_CMD_NAV_RETURN_TO_LAUNCH);
   //please refer to the individual autopilot specifications for details.
   
+  // I tried the following on 20160318 with the PX4 multicopter sw stack,
+  // but this is apparently not sufficient-- it appears you need to switch
+  // into AUTO mode with a mission already active?
+  /*
   mavlink_message_t msg;
   uint8_t buf[MAVLINK_MAX_PACKET_LEN];
   
@@ -131,16 +108,19 @@ bool MavlinkBridge::sendCommandRTL()
   int bytes_sent = Serial1.write(buf, len);
   
   return (bytes_sent == len);
+  */
 }
 
 
 bool MavlinkBridge::sendCommandLand()
 {
+  //tested 20160318 with PX4 multicopter in POSCTL mode
   return sendLongCommand(MAV_CMD_NAV_LAND);
 }
 
 bool MavlinkBridge::sendCommandTakeoff()
 {
+  //untested, but may work if the vehicle is already in AUTO mode and has a defined mission
   return sendLongCommand(MAV_CMD_NAV_TAKEOFF);
 }
 
